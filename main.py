@@ -120,3 +120,64 @@ def derive_pair_id_local(left_hash_hex: str, right_hash_hex: str, binder: str, s
 
 def get_w3(rpc_url: str):
     try:
+        from web3 import Web3
+        w3 = Web3(Web3.HTTPProvider(rpc_url))
+        if not w3.is_connected():
+            raise RuntimeError("Not connected to RPC")
+        return w3
+    except ImportError:
+        raise RuntimeError("Install web3: pip install web3")
+
+def get_contract(w3, address: str):
+    from web3 import Web3
+    return w3.eth.contract(address=Web3.to_checksum_address(address), abi=DOPPEL_BANGER_ABI)
+
+def get_signer_account(w3, private_key: str):
+    from web3 import Web3
+    pk = private_key.strip()
+    if pk.startswith("0x"):
+        pk = pk[2:]
+    return w3.eth.account.from_key(pk)
+
+# -----------------------------------------------------------------------------
+# COMMANDS: HASH / PAIR-ID (no RPC)
+# -----------------------------------------------------------------------------
+
+def cmd_hash(args: argparse.Namespace) -> int:
+    left = (args.left or "").encode("utf-8")
+    right = (args.right or "").encode("utf-8")
+    left_h = hash_payload(left)
+    right_h = hash_payload(right)
+    print("leftHash:", left_h)
+    print("rightHash:", right_h)
+    if getattr(args, "json_out", False):
+        print(json.dumps({"leftHash": left_h, "rightHash": right_h}))
+    return 0
+
+def cmd_pair_id(args: argparse.Namespace) -> int:
+    left_hex = args.left_hash or "0x" + "00" * 32
+    right_hex = args.right_hash or "0x" + "00" * 32
+    binder = args.binder or "0x" + "00" * 20
+    salt = getattr(args, "salt", 0) or 0
+    try:
+        pid = derive_pair_id_local(left_hex, right_hex, binder, salt)
+        print("pairId:", pid)
+        if getattr(args, "json_out", False):
+            print(json.dumps({"pairId": pid}))
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+# -----------------------------------------------------------------------------
+# COMMANDS: REGISTER / STRIKE / RESOLVE / BOUNTY / STRIPE (need RPC + key)
+# -----------------------------------------------------------------------------
+
+def cmd_register(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    pk = getattr(args, "private_key", None)
+    if not pk:
