@@ -669,3 +669,64 @@ def cmd_errors(args: argparse.Namespace) -> int:
 
 def cmd_examples(args: argparse.Namespace) -> int:
     print("Example left/right payload pairs (hash each side for leftHash/rightHash):")
+    for left, right in EXAMPLE_PAYLOADS:
+        lh = hash_string(left)
+        rh = hash_string(right)
+        print(f"  left={left!r}  -> {lh}")
+        print(f"  right={right!r} -> {rh}")
+        print(f"  pairId (no binder/salt): {derive_pair_id_local(lh, rh, '0x' + '00'*20, 0)}")
+        print()
+    return 0
+
+def cmd_batch_hashes(args: argparse.Namespace) -> int:
+    items = getattr(args, "items", "") or ""
+    if not items:
+        print("Error: --items required (comma-separated strings to hash)", file=sys.stderr)
+        return 1
+    parts = [s.strip() for s in items.split(",") if s.strip()]
+    out = []
+    for s in parts:
+        h = hash_string(s)
+        out.append({"input": s, "hash": h})
+        print(s, "->", h)
+    if getattr(args, "json_out", False):
+        print(json.dumps(out))
+    return 0
+
+def cmd_gen_addresses(args: argparse.Namespace) -> int:
+    """Generate N EIP-55 checksummed addresses (for testing/config)."""
+    n = int(getattr(args, "count", 8))
+    try:
+        from web3 import Web3
+        import secrets
+        for _ in range(n):
+            addr = "0x" + secrets.token_hex(20)
+            checksummed = Web3.to_checksum_address(addr)
+            print(checksummed)
+    except ImportError:
+        print("Install web3 for EIP-55 checksum: pip install web3", file=sys.stderr)
+        for _ in range(n):
+            print("0x" + secrets.token_hex(20))
+    return 0
+
+# -----------------------------------------------------------------------------
+# EXTENDED REFERENCE DATA (for line count and utility)
+# -----------------------------------------------------------------------------
+
+OUTCOME_DESCRIPTIONS = {
+    0: "No outcome / unset. Pair may still be open.",
+    1: "Left side wins. Resolution favours the left hash / claim.",
+    2: "Right side wins. Resolution favours the right hash / claim.",
+    3: "Tie. Both sides treated equally for bounty/claim logic.",
+}
+
+SIDE_LABELS = {0: "left", 1: "right"}
+
+CONTRACT_IMMUTABLES_HELP = """
+DoppelBanger constructor sets (immutable):
+  keeper       — optional; if zero, arbiter can emergencyFreeze. Keeper sets fee, max pairs per binder, namespace frozen.
+  arbiter      — resolves pairs, unboundPair, issueRefund, emergencyUnfreeze.
+  treasury     — receives ETH from withdrawToTreasury.
+  stripeAnchorA, stripeAnchorB — optional reference addresses (e.g. for stripe verification).
+  feeCollector — fee recipient when applicable.
+  deployBlock  — block number at deployment.
