@@ -730,3 +730,64 @@ DoppelBanger constructor sets (immutable):
   stripeAnchorA, stripeAnchorB — optional reference addresses (e.g. for stripe verification).
   feeCollector — fee recipient when applicable.
   deployBlock  — block number at deployment.
+"""
+
+USAGE_EXAMPLES = """
+Usage examples (env or flags):
+
+  export DANDG_RPC_URL=http://127.0.0.1:8545
+  export DANDG_CONTRACT=0x...
+
+  # Local hashes (no RPC)
+  python DandG_app.py hash --left "left payload" --right "right payload"
+  python DandG_app.py pair-id --left-hash 0x... --right-hash 0x... --binder 0x... --salt 1
+  python DandG_app.py batch-hashes --items "a,b,c"
+  python DandG_app.py examples
+
+  # View (RPC + contract)
+  python DandG_app.py get-pair --pair-id 0x...
+  python DandG_app.py get-stripe --stripe-id 0x...
+  python DandG_app.py list-pairs --from-idx 0 --to-idx 20
+  python DandG_app.py list-stripes
+  python DandG_app.py stats
+
+  # State-changing (RPC + contract + private-key)
+  python DandG_app.py register --pair-id 0x... --left-hash 0x... --right-hash 0x... --private-key $PK
+  python DandG_app.py strike --pair-id 0x... --side 0 --reason 0x... --private-key $PK
+  python DandG_app.py resolve --pair-id 0x... --outcome 1 --private-key $PK
+  python DandG_app.py post-bounty --pair-id 0x... --value-wei 1000000000000000 --private-key $PK
+  python DandG_app.py claim-bounty --pair-id 0x... --private-key $PK
+  python DandG_app.py add-stripe --stripe-id 0x... --anchor-hash 0x... --private-key $PK
+  python DandG_app.py link-stripe --stripe-id 0x... --pair-id 0x... --private-key $PK
+
+  # Reference
+  python DandG_app.py playbook
+  python DandG_app.py tips
+  python DandG_app.py errors
+  python DandG_app.py reference
+  python DandG_app.py constants
+  python DandG_app.py config
+  python DandG_app.py version
+  python DandG_app.py demo
+  python DandG_app.py interactive
+  python DandG_app.py gen-addresses --count 10
+"""
+
+EXTRA_TWIN_TIPS = [
+    "Left hash and right hash can be from arbitrary payloads: use hashTwinPayload(leftPayload, rightPayload) on-chain or hash locally.",
+    "Strings: hashTwinStrings(leftStr, rightStr) on-chain; locally use hash_string(s) for each.",
+    "pairIdFromHashes(leftHash, rightHash) = keccak256(leftHash, rightHash) for a binder-agnostic id.",
+    "Stripe anchors can represent external references; link stripes to pairs for audit trails.",
+    "Namespace freeze (keeper or arbiter when keeper is zero) stops new registerTwin and addStripe.",
+    "Bounty is stored per pair; multiple posters add to the same bounty pool until resolution.",
+    "After resolution, only one claimBounty is allowed per pair (bountyClaimed = true).",
+    "getPairIdsRegisteredBetween(fromBlock, toBlock) for block-range queries.",
+    "getPairIdsByOutcome(outcome) for resolved pairs by outcome (0-3).",
+    "getPairIdsWithStrikesInRange(minStrikesLeft, minStrikesRight) for pairs with minimum strike counts.",
+    "getUnlinkedStripeIds() and getLinkedStripeIds() for stripe filtering.",
+    "getBinderAddresses() and getStripeOwnerAddresses() for unique address lists.",
+    "getPairSummary(pairId) and getStripeSummary(stripeId) for lightweight existence + flags.",
+    "getMultiplePairSummaries(pairIds[]) and getMultipleStripeSummaries(stripeIds[]) for batch summary.",
+    "contractBalanceWei() includes all received ETH (receive(), postBounty).",
+    "withdrawToTreasury(amountWei) is keeper-only; issueRefund(to, amountWei, reasonHash) is arbiter-only.",
+]
