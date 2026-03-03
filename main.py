@@ -608,3 +608,64 @@ TWIN_TIPS = [
     "Stripe ownership: getStripeIdsByOwner(owner), getStripeCountByOwner(owner).",
     "Linked stripes for a pair: getLinkedStripeIdsForPair(pairId).",
     "Integrity checks: checkPairIntegrity(pairId), checkStripeIntegrity(stripeId).",
+    "Can register more: canRegisterMore(account). Remaining: remainingSlotsForBinder(account), remainingGlobalPairSlots().",
+    "Fee on bounty: computeFeeForBounty(bountyWei), computeNetBounty(bountyWei).",
+    "Outcome labels: outcomeLabel(outcome) returns 'none'|'left'|'right'|'tie'.",
+    "Top binders by pair count: getTopBindersByPairCount(topN).",
+    "Blocks since: blocksSinceDeploy(), blocksSincePairRegistered(pairId), blocksSinceStripeCreated(stripeId).",
+]
+
+ERROR_CODE_REFERENCE = """
+DoppelBanger custom errors (revert with):
+
+  DB_ZeroPair          — pairId is bytes32(0)
+  DB_ZeroHash          — leftHash or rightHash is bytes32(0)
+  DB_ZeroAddress       — required address is address(0)
+  DB_NotKeeper         — sender is not the keeper (or keeper is set and sender != keeper)
+  DB_NotArbiter        — sender is not the arbiter
+  DB_PairNotFound      — no pair for given pairId
+  DB_AlreadyResolved   — pair already resolved
+  DB_NotResolved       — pair not yet resolved (e.g. claimBounty)
+  DB_NotBinder         — sender is not the binder (e.g. claimBounty)
+  DB_ReentrantCall     — reentrancy lock active
+  DB_MaxPairsReached   — pairCount >= DB_MAX_PAIRS
+  DB_MaxPairsPerBinderReached — binder at max pairs
+  DB_NamespaceFrozen   — namespace is frozen
+  DB_InvalidSide       — side >= DB_SIDES (2)
+  DB_InvalidBatchLength — batch length mismatch or > DB_MAX_BATCH
+  DB_DuplicatePair     — pairId or stripeId already exists
+  DB_StripeNotFound    — no stripe for given stripeId
+  DB_InvalidOutcome    — outcome > 3
+  DB_TransferFailed    — ETH transfer failed
+  DB_ZeroAmount        — zero value where amount required
+  DB_InsufficientBounty — bounty already claimed or zero
+  DB_AlreadyStruck     — this account already struck this side for this pair
+  DB_InvalidFeeBps     — feeBps > DB_FEE_BPS_CAP
+  DB_StripeAlreadyLinked — stripe already linked to a pair
+  DB_NotStripeOwner    — sender is not the stripe owner
+  DB_MaxStripesReached — stripeCount >= DB_MAX_STRIPES
+  DB_InvalidStripeIndex — index out of range
+"""
+
+EXAMPLE_PAYLOADS = [
+    ("claim_v1", "mirror_v1"),
+    ("attestation_left_0", "attestation_right_0"),
+    ("payload_a", "payload_b"),
+    ("0xdead", "0xbeef"),
+]
+
+def cmd_playbook(args: argparse.Namespace) -> int:
+    print(TWIN_ATTESTATION_PLAYBOOK)
+    return 0
+
+def cmd_tips(args: argparse.Namespace) -> int:
+    for i, tip in enumerate(TWIN_TIPS, 1):
+        print(f"  {i}. {tip}")
+    return 0
+
+def cmd_errors(args: argparse.Namespace) -> int:
+    print(ERROR_CODE_REFERENCE)
+    return 0
+
+def cmd_examples(args: argparse.Namespace) -> int:
+    print("Example left/right payload pairs (hash each side for leftHash/rightHash):")
