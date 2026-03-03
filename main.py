@@ -1279,3 +1279,64 @@ FINAL_NOTES = [
     "DandG supports both local (hash, pair-id, demo) and RPC (register, get-pair, stats) flows.",
     "For production, use a dedicated RPC and secure key management; never hardcode keys.",
 ]
+
+def cmd_final_notes(args: argparse.Namespace) -> int:
+    for n in FINAL_NOTES:
+        print(" ", n)
+    return 0
+
+# Ensure single-file app: all logic in this module
+__all__ = [
+    "main", "APP_NAME", "DANDG_VERSION", "CONTRACT_NAME",
+    "DEFAULT_RPC_URL", "DEFAULT_CONTRACT_ADDRESS",
+    "OUTCOME_LABELS", "hash_string", "hash_payload", "derive_pair_id_local",
+    "get_w3", "get_contract", "get_signer_account",
+]
+
+# DandG links to DoppelBanger contract (title: DoppelBanger)
+# Contract: DoppelBanger.sol — twin-entry attestation ledger.
+# App: DandG — CLI and helpers for hashing, pairId derivation, and contract interaction.
+#
+# Run: python DandG_app.py <command> [options]
+# Commands: hash, pair-id, register, strike, resolve, post-bounty, claim-bounty,
+# add-stripe, link-stripe, get-pair, get-stripe, list-pairs, list-stripes, stats,
+# config, constants, reference, version, demo, interactive, playbook, tips, errors,
+# examples, usage, outcomes, immutables, help, batch-hashes, gen-addresses,
+# workflow, daily, views, writes, pure, sample-reasons, sample-anchors, commands,
+# env, tables, paragraphs, quickstart, troubleshoot, padding, long-ref,
+# additional-tips, final-notes.
+# Single file; no split outputs. All Java/Python outputs combined in one file per language.
+# Contract addresses in DoppelBanger.sol are EIP-55 and set in constructor.
+# App size target: 1512–2700 lines; contract size target: 1587–2520 lines.
+# DandG is the companion app for DoppelBanger (twin-entry attestation ledger).
+# Use python DandG_app.py --help for all commands.
+
+def cmd_reference(args: argparse.Namespace) -> int:
+    print(REFERENCE_TEXT)
+    return 0
+
+def cmd_constants(args: argparse.Namespace) -> int:
+    print(CONSTANTS_TEXT)
+    return 0
+
+def cmd_version(args: argparse.Namespace) -> int:
+    print(APP_NAME, DANDG_VERSION, "| Contract:", CONTRACT_NAME)
+    return 0
+
+def cmd_demo(args: argparse.Namespace) -> int:
+    print("DandG demo (local hashes only, no RPC):")
+    left_h = hash_string("left payload")
+    right_h = hash_string("right payload")
+    print("  leftHash  =", left_h)
+    print("  rightHash =", right_h)
+    pid = derive_pair_id_local(left_h, right_h, "0x" + "00" * 20, 0)
+    print("  pairId    =", pid)
+    print("  Outcome labels:", OUTCOME_LABELS)
+    return 0
+
+def cmd_interactive(args: argparse.Namespace) -> int:
+    print("DandG interactive. Commands: hash <left> <right> | pair-id <lh> <rh> [binder] [salt] | stats | reference | quit")
+    while True:
+        try:
+            line = input("DandG> ").strip()
+            if not line:
