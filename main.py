@@ -181,3 +181,64 @@ def cmd_register(args: argparse.Namespace) -> int:
         return 1
     pk = getattr(args, "private_key", None)
     if not pk:
+        print("Error: --private-key required", file=sys.stderr)
+        return 1
+    pair_id = args.pair_id
+    left_hash = args.left_hash
+    right_hash = args.right_hash
+    if not all([pair_id, left_hash, right_hash]):
+        print("Error: --pair-id, --left-hash, --right-hash required", file=sys.stderr)
+        return 1
+    w3 = get_w3(rpc)
+    acct = get_signer_account(w3, pk)
+    contract = get_contract(w3, contract_addr)
+    pair_id_b = bytes32_from_hex(pair_id)
+    left_b = bytes32_from_hex(left_hash)
+    right_b = bytes32_from_hex(right_hash)
+    try:
+        tx = contract.functions.registerTwin(pair_id_b, left_b, right_b).build_transaction({
+            "from": acct.address,
+            "nonce": w3.eth.get_transaction_count(acct.address),
+        })
+        signed = w3.eth.account.sign_transaction(tx, acct.key)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        print("Tx hash:", tx_hash.hex())
+        if getattr(args, "wait", False):
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+            print("Status:", "ok" if receipt["status"] == 1 else "failed")
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+def cmd_strike(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    pk = getattr(args, "private_key", None)
+    if not pk:
+        print("Error: --private-key required", file=sys.stderr)
+        return 1
+    pair_id = args.pair_id
+    side = int(getattr(args, "side", 0))
+    reason = getattr(args, "reason", None) or "0x" + "00" * 32
+    w3 = get_w3(rpc)
+    acct = get_signer_account(w3, pk)
+    contract = get_contract(w3, contract_addr)
+    pair_id_b = bytes32_from_hex(pair_id)
+    reason_b = bytes32_from_hex(reason) if len(reason) >= 64 else bytes(32)
+    try:
+        tx = contract.functions.strikeMirror(pair_id_b, side, reason_b).build_transaction({
+            "from": acct.address,
+            "nonce": w3.eth.get_transaction_count(acct.address),
+        })
+        signed = w3.eth.account.sign_transaction(tx, acct.key)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        print("Tx hash:", tx_hash.hex())
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
