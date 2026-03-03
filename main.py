@@ -547,3 +547,64 @@ State-changing (require signer):
   postBounty(pairId) payable
   claimBounty(pairId)
   addStripe(stripeId, anchorHash)
+  linkStripeToPair(stripeId, pairId)
+
+Errors: DB_ZeroPair, DB_ZeroHash, DB_NotKeeper, DB_NotArbiter, DB_PairNotFound, DB_AlreadyResolved,
+  DB_NotResolved, DB_NotBinder, DB_ReentrantCall, DB_MaxPairsReached, DB_MaxPairsPerBinderReached,
+  DB_NamespaceFrozen, DB_InvalidSide, DB_InvalidBatchLength, DB_DuplicatePair, DB_StripeNotFound,
+  DB_InvalidOutcome, DB_TransferFailed, DB_ZeroAmount, DB_InsufficientBounty, DB_AlreadyStruck,
+  DB_InvalidFeeBps, DB_StripeAlreadyLinked, DB_NotStripeOwner, DB_MaxStripesReached, DB_InvalidStripeIndex.
+"""
+
+CONSTANTS_TEXT = """
+DoppelBanger constants:
+  DB_MAX_PAIRS = 750_000
+  DB_MAX_PAIRS_PER_BINDER = 12_000
+  DB_MAX_BATCH = 72
+  DB_MAX_STRIPES = 256
+  DB_FEE_BPS_CAP = 600
+  DB_SIDES = 2
+  DB_OUTCOME_NONE = 0, DB_OUTCOME_LEFT = 1, DB_OUTCOME_RIGHT = 2, DB_OUTCOME_TIE = 3
+"""
+
+# -----------------------------------------------------------------------------
+# TWIN ATTESTATION PLAYBOOK (reference content for users)
+# -----------------------------------------------------------------------------
+
+TWIN_ATTESTATION_PLAYBOOK = """
+DoppelBanger — twin-entry attestation playbook
+
+Before registering a pair:
+  - Compute leftHash = keccak256(leftPayload) and rightHash = keccak256(rightPayload).
+  - Derive pairId = keccak256(leftHash, rightHash, binder, salt) or keccak256(leftHash, rightHash).
+  - Ensure pairId is not already registered (call pairExists(pairId)).
+  - Check remaining slots for your binder (remainingSlotsForBinder(binder)).
+
+Striking a mirror:
+  - Only one strike per (pairId, side, account). Side 0 = left, 1 = right.
+  - Pair must exist and not be resolved. Use reasonHash to log why (e.g. keccak256("reason string")).
+
+Resolution:
+  - Only the arbiter can resolve. Outcome: 0=none, 1=left, 2=right, 3=tie.
+  - After resolution, bounties can be claimed by arbiter or binder.
+
+Bounties:
+  - Anyone can postBounty(pairId) with msg.value before resolution.
+  - After resolution, arbiter or binder can claimBounty(pairId) once per pair.
+
+Stripes:
+  - addStripe(stripeId, anchorHash) to create a stripe; then linkStripeToPair(stripeId, pairId) to bind to a pair.
+  - Each stripe can be linked at most once.
+"""
+
+TWIN_TIPS = [
+    "Use derivePairId(leftHash, rightHash, binder, salt) for unique pairIds when multiple pairs share the same hashes.",
+    "Batch register with batchRegisterTwins(pairIds[], leftHashes[], rightHashes[]) up to DB_MAX_BATCH (72) per tx.",
+    "Check getGlobalStats() for totalPairs, totalStripes, deployBlockNum, feeBps, maxPairsPerBinder.",
+    "Use getPairsInRange(fromIndex, toIndex) to paginate pairs without loading full arrays.",
+    "Resolved pairs: getResolvedPairIdsInRange or getPairIdsByOutcome(outcome).",
+    "Unresolved: getUnresolvedPairIdsInRange or countUnresolvedPairs().",
+    "Pairs with bounty: getPairIdsWithBountyInRange or countPairsWithBounty().",
+    "Stripe ownership: getStripeIdsByOwner(owner), getStripeCountByOwner(owner).",
+    "Linked stripes for a pair: getLinkedStripeIdsForPair(pairId).",
+    "Integrity checks: checkPairIntegrity(pairId), checkStripeIntegrity(stripeId).",
