@@ -364,3 +364,64 @@ def cmd_link_stripe(args: argparse.Namespace) -> int:
     if not pk:
         print("Error: --private-key required", file=sys.stderr)
         return 1
+    stripe_id_b = bytes32_from_hex(args.stripe_id)
+    pair_id_b = bytes32_from_hex(args.pair_id)
+    w3 = get_w3(rpc)
+    acct = get_signer_account(w3, pk)
+    contract = get_contract(w3, contract_addr)
+    try:
+        tx = contract.functions.linkStripeToPair(stripe_id_b, pair_id_b).build_transaction({
+            "from": acct.address,
+            "nonce": w3.eth.get_transaction_count(acct.address),
+        })
+        signed = w3.eth.account.sign_transaction(tx, acct.key)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        print("Tx hash:", tx_hash.hex())
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+# -----------------------------------------------------------------------------
+# COMMANDS: VIEW (RPC + contract, no key)
+# -----------------------------------------------------------------------------
+
+def cmd_get_pair(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    w3 = get_w3(rpc)
+    contract = get_contract(w3, contract_addr)
+    pair_id_b = bytes32_from_hex(args.pair_id)
+    try:
+        out = contract.functions.getPair(pair_id_b).call()
+        leftHash, rightHash, binder, registeredAtBlock, resolutionOutcome, resolved, strikeCountLeft, strikeCountRight, bountyWei, bountyClaimed = out
+        print("leftHash:", hex_from_bytes32(leftHash))
+        print("rightHash:", hex_from_bytes32(rightHash))
+        print("binder:", binder)
+        print("registeredAtBlock:", registeredAtBlock)
+        print("resolutionOutcome:", resolutionOutcome, OUTCOME_LABELS.get(resolutionOutcome, "?"))
+        print("resolved:", resolved)
+        print("strikeCountLeft:", strikeCountLeft)
+        print("strikeCountRight:", strikeCountRight)
+        print("bountyWei:", bountyWei)
+        print("bountyClaimed:", bountyClaimed)
+        if getattr(args, "json_out", False):
+            print(json.dumps({
+                "leftHash": hex_from_bytes32(leftHash),
+                "rightHash": hex_from_bytes32(rightHash),
+                "binder": binder,
+                "registeredAtBlock": registeredAtBlock,
+                "resolutionOutcome": resolutionOutcome,
+                "resolved": resolved,
+                "strikeCountLeft": strikeCountLeft,
+                "strikeCountRight": strikeCountRight,
+                "bountyWei": bountyWei,
+                "bountyClaimed": bountyClaimed,
+            }))
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
