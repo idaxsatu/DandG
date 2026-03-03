@@ -913,3 +913,64 @@ DoppelBanger view functions (no state change):
   blocksSinceDeploy(), blocksSincePairRegistered(pairId), blocksSinceStripeCreated(stripeId)
   getTopBindersByPairCount(topN), getDeployBlock(), getTreasuryAddress(), getArbiterAddress()
   getKeeperAddress(), getFeeCollectorAddress(), getStripeAnchorA(), getStripeAnchorB()
+  getVersionString(), getNamespaceString(), isKeeper(account), isArbiter(account)
+  getLeftAndRightHashes(pairId), bountyClaimable(pairId), canStrike(...), canResolve(pairId), canPostBounty(pairId)
+"""
+
+STATE_CHANGING_LIST = """
+DoppelBanger state-changing functions:
+
+  registerTwin(pairId, leftHash, rightHash)           — any (when not frozen)
+  strikeMirror(pairId, side, reasonHash)             — any (once per side per account)
+  resolvePair(pairId, outcome)                        — arbiter only
+  postBounty(pairId) payable                          — any
+  claimBounty(pairId)                                — arbiter or binder
+  addStripe(stripeId, anchorHash)                     — any (when not frozen)
+  linkStripeToPair(stripeId, pairId)                  — stripe owner
+  batchRegisterTwins(pairIds[], leftHashes[], rightHashes[]) — any (when not frozen)
+  setNamespaceFrozen(namespaceId, frozen)             — keeper
+  setMaxPairsPerBinder(newMax)                        — keeper
+  setFeeBps(newBps)                                  — keeper
+  unboundPair(pairId)                                 — arbiter
+  withdrawToTreasury(amountWei)                       — keeper
+  issueRefund(to, amountWei, reasonHash)             — arbiter
+  emergencyFreeze(namespaceId)                        — keeper or arbiter (if keeper zero)
+  emergencyUnfreeze(namespaceId)                      — arbiter only
+"""
+
+PURE_HELPER_LIST = """
+DoppelBanger pure/helper (no storage read):
+
+  hashTwinPayload(leftPayload, rightPayload) -> leftHash, rightHash
+  hashTwinStrings(leftStr, rightStr) -> leftHash, rightHash
+  derivePairId(leftHash, rightHash, binder, salt) -> pairId
+  combineHashes(leftHash, rightHash) -> hash
+  hashSingle(payload), hashString(s), hashBytes32(a)
+  pairIdFromHashes(left, right), pairIdFromHashesAndBinder(...), pairIdFromHashesBinderSalt(...)
+  stripeIdFromAnchor(anchorHash), stripeIdFromAnchorAndOwner(anchorHash, owner)
+  resolutionOutcomeNone/Left/Right/Tie(), outcomeLabel(outcome), isValidOutcome(outcome)
+  compareHashes(a, b), isLeftSide(side), isRightSide(side), sideFromBool(bool)
+  getOutcomeConstants(), getCapConstants(), getVersionString(), getNamespaceString()
+  getFeeBpsCap(), getMaxBatchSize(), getMaxStripes(), getMaxPairsGlobal()
+  getMaxPairsPerBinderCap(), getSidesCount()
+"""
+
+def cmd_workflow(args: argparse.Namespace) -> int:
+    print(WORKFLOW_STEP_BY_STEP)
+    return 0
+
+def cmd_daily(args: argparse.Namespace) -> int:
+    for i, line in enumerate(DAILY_TWIN_PRACTICE, 1):
+        print(f"  {i}. {line}")
+    return 0
+
+def cmd_views(args: argparse.Namespace) -> int:
+    print(CONTRACT_VIEW_FUNCTIONS_LIST)
+    return 0
+
+def cmd_writes(args: argparse.Namespace) -> int:
+    print(STATE_CHANGING_LIST)
+    return 0
+
+def cmd_pure(args: argparse.Namespace) -> int:
+    print(PURE_HELPER_LIST)
