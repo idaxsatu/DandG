@@ -425,3 +425,64 @@ def cmd_get_pair(args: argparse.Namespace) -> int:
         print("Error:", e, file=sys.stderr)
         return 1
     return 0
+
+def cmd_get_stripe(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    w3 = get_w3(rpc)
+    contract = get_contract(w3, contract_addr)
+    stripe_id_b = bytes32_from_hex(args.stripe_id)
+    try:
+        out = contract.functions.getStripe(stripe_id_b).call()
+        anchorHash, owner, createdAtBlock, linkedPairId, linked = out
+        print("anchorHash:", hex_from_bytes32(anchorHash))
+        print("owner:", owner)
+        print("createdAtBlock:", createdAtBlock)
+        print("linkedPairId:", hex_from_bytes32(linkedPairId))
+        print("linked:", linked)
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+def cmd_list_pairs(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    w3 = get_w3(rpc)
+    contract = get_contract(w3, contract_addr)
+    from_idx = int(getattr(args, "from_idx", 0))
+    to_idx = int(getattr(args, "to_idx", 99))
+    try:
+        total = contract.functions.pairCount().call()
+        if total == 0:
+            print("No pairs.")
+            return 0
+        if to_idx >= total:
+            to_idx = total - 1
+        if from_idx > to_idx:
+            from_idx, to_idx = 0, min(99, total - 1)
+        pairIds, leftHashes, rightHashes, binders, resolvedFlags = contract.functions.getPairsInRange(from_idx, to_idx).call()
+        for i in range(len(pairIds)):
+            print(hex_from_bytes32(pairIds[i]), "|", hex_from_bytes32(leftHashes[i])[:18]+"...", "|", hex_from_bytes32(rightHashes[i])[:18]+"...", "|", binders[i], "|", "resolved" if resolvedFlags[i] else "open")
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+def cmd_list_stripes(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    w3 = get_w3(rpc)
+    contract = get_contract(w3, contract_addr)
+    from_idx = int(getattr(args, "from_idx", 0))
+    to_idx = int(getattr(args, "to_idx", 99))
+    try:
