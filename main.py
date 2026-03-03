@@ -1035,3 +1035,64 @@ COMMAND_ONE_LINERS = {
     "claim-bounty": "Claim bounty after resolution.",
     "add-stripe": "Add a stripe.",
     "link-stripe": "Link stripe to pair.",
+    "get-pair": "Get pair by pairId.",
+    "get-stripe": "Get stripe by stripeId.",
+    "list-pairs": "List pairs in index range.",
+    "list-stripes": "List stripes in index range.",
+    "stats": "Global contract stats.",
+    "config": "Show app config.",
+    "constants": "Contract constants.",
+    "reference": "Contract reference.",
+    "version": "App version.",
+    "demo": "Local hash demo.",
+    "interactive": "Interactive REPL.",
+    "playbook": "Twin attestation playbook.",
+    "tips": "Usage tips.",
+    "errors": "Error code reference.",
+    "examples": "Example payload hashes.",
+    "usage": "Usage examples.",
+    "outcomes": "Outcome codes 0-3.",
+    "immutables": "Constructor immutables.",
+    "help": "Full help.",
+    "batch-hashes": "Hash comma-separated strings.",
+    "gen-addresses": "Generate EIP-55 addresses.",
+    "workflow": "Step-by-step workflow.",
+    "daily": "Daily practice tips.",
+    "views": "List view functions.",
+    "writes": "List state-changing functions.",
+    "pure": "List pure/helper functions.",
+    "sample-reasons": "Sample reason hashes.",
+    "sample-anchors": "Sample anchor hashes.",
+    "env": "Environment and deployment notes.",
+    "tables": "Outcome/side/cap tables.",
+    "paragraphs": "Extra integration paragraphs.",
+    "quickstart": "Quick start guide.",
+    "troubleshoot": "Troubleshooting.",
+    "padding": "Reference lines.",
+}
+
+def cmd_commands(args: argparse.Namespace) -> int:
+    for cmd, desc in sorted(COMMAND_ONE_LINERS.items()):
+        print(f"  {cmd}: {desc}")
+    return 0
+
+# -----------------------------------------------------------------------------
+# ENVIRONMENT AND DEPLOYMENT NOTES (reference)
+# -----------------------------------------------------------------------------
+
+ENV_AND_DEPLOY = """
+Environment variables:
+  DANDG_RPC_URL   — default RPC URL (e.g. http://127.0.0.1:8545 or https://mainnet.infura.io/...)
+  DANDG_CONTRACT  — default DoppelBanger contract address
+
+Deployment notes:
+  - DoppelBanger has no constructor arguments; all roles and addresses are set inside the constructor.
+  - keeper can be address(0); then arbiter can call emergencyFreeze. Unfreeze is arbiter-only.
+  - arbiter and treasury must be non-zero (constructor reverts otherwise).
+  - After deploy, set DANDG_CONTRACT to the deployed address for convenience.
+  - For mainnet: use a secure RPC and never expose private keys; prefer env vars or key files.
+"""
+
+def cmd_env(args: argparse.Namespace) -> int:
+    print(ENV_AND_DEPLOY)
+    return 0
