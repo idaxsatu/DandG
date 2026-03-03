@@ -1401,3 +1401,64 @@ def main() -> int:
     pid_p.add_argument("--left-hash", type=str, required=True)
     pid_p.add_argument("--right-hash", type=str, required=True)
     pid_p.add_argument("--binder", type=str, default="")
+    pid_p.add_argument("--salt", type=int, default=0)
+    pid_p.set_defaults(func=cmd_pair_id)
+
+    reg_p = sub.add_parser("register", help="Register twin pair (needs --private-key)")
+    reg_p.add_argument("--pair-id", type=str, required=True)
+    reg_p.add_argument("--left-hash", type=str, required=True)
+    reg_p.add_argument("--right-hash", type=str, required=True)
+    reg_p.add_argument("--wait", action="store_true", help="Wait for tx receipt")
+    reg_p.set_defaults(func=cmd_register)
+
+    strike_p = sub.add_parser("strike", help="Strike mirror (side 0=left, 1=right)")
+    strike_p.add_argument("--pair-id", type=str, required=True)
+    strike_p.add_argument("--side", type=int, default=0)
+    strike_p.add_argument("--reason", type=str, default="")
+    strike_p.set_defaults(func=cmd_strike)
+
+    resolve_p = sub.add_parser("resolve", help="Resolve pair (outcome 0-3)")
+    resolve_p.add_argument("--pair-id", type=str, required=True)
+    resolve_p.add_argument("--outcome", type=int, required=True)
+    resolve_p.set_defaults(func=cmd_resolve)
+
+    bounty_p = sub.add_parser("post-bounty", help="Post bounty (payable)")
+    bounty_p.add_argument("--pair-id", type=str, required=True)
+    bounty_p.add_argument("--value-wei", type=str, required=True)
+    bounty_p.set_defaults(func=cmd_post_bounty)
+
+    claim_p = sub.add_parser("claim-bounty", help="Claim bounty for resolved pair")
+    claim_p.add_argument("--pair-id", type=str, required=True)
+    claim_p.set_defaults(func=cmd_claim_bounty)
+
+    add_s = sub.add_parser("add-stripe", help="Add stripe")
+    add_s.add_argument("--stripe-id", type=str, required=True)
+    add_s.add_argument("--anchor-hash", type=str, required=True)
+    add_s.set_defaults(func=cmd_add_stripe)
+
+    link_s = sub.add_parser("link-stripe", help="Link stripe to pair")
+    link_s.add_argument("--stripe-id", type=str, required=True)
+    link_s.add_argument("--pair-id", type=str, required=True)
+    link_s.set_defaults(func=cmd_link_stripe)
+
+    get_pair_p = sub.add_parser("get-pair", help="Get pair by pairId")
+    get_pair_p.add_argument("--pair-id", type=str, required=True)
+    get_pair_p.set_defaults(func=cmd_get_pair)
+
+    get_stripe_p = sub.add_parser("get-stripe", help="Get stripe by stripeId")
+    get_stripe_p.add_argument("--stripe-id", type=str, required=True)
+    get_stripe_p.set_defaults(func=cmd_get_stripe)
+
+    list_pairs_p = sub.add_parser("list-pairs", help="List pairs in index range")
+    list_pairs_p.add_argument("--from-idx", type=int, default=0)
+    list_pairs_p.add_argument("--to-idx", type=int, default=99)
+    list_pairs_p.set_defaults(func=cmd_list_pairs)
+
+    list_stripes_p = sub.add_parser("list-stripes", help="List stripes in index range")
+    list_stripes_p.add_argument("--from-idx", type=int, default=0)
+    list_stripes_p.add_argument("--to-idx", type=int, default=99)
+    list_stripes_p.set_defaults(func=cmd_list_stripes)
+
+    sub.add_parser("stats", help="Global stats").set_defaults(func=cmd_stats)
+    sub.add_parser("config", help="Show config").set_defaults(func=cmd_config)
+    sub.add_parser("constants", help="Show contract constants").set_defaults(func=cmd_constants)
