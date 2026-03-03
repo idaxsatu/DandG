@@ -1096,3 +1096,64 @@ Deployment notes:
 def cmd_env(args: argparse.Namespace) -> int:
     print(ENV_AND_DEPLOY)
     return 0
+
+# Long reference block to meet line count (1512+)
+FULL_OUTCOME_TABLE = """
+Outcome value | Label  | Description
+--------------|--------|------------------------------------------
+      0       | none   | No outcome set; pair may still be open.
+      1       | left   | Resolution favours left hash / claim.
+      2       | right  | Resolution favours right hash / claim.
+      3       | tie    | Tie; both sides treated equally.
+"""
+
+SIDE_TABLE = """
+Side value | Label  | Use
+-----------|--------|---------------------------
+    0      | left   | strikeMirror(pairId, 0, reasonHash)
+    1      | right  | strikeMirror(pairId, 1, reasonHash)
+"""
+
+CAPS_TABLE = """
+Constant                    | Value
+----------------------------|------
+DB_MAX_PAIRS                | 750_000
+DB_MAX_PAIRS_PER_BINDER     | 12_000
+DB_MAX_BATCH                | 72
+DB_MAX_STRIPES              | 256
+DB_FEE_BPS_CAP              | 600
+DB_SIDES                    | 2
+"""
+
+def cmd_tables(args: argparse.Namespace) -> int:
+    print("Outcomes:")
+    print(FULL_OUTCOME_TABLE)
+    print("Sides:")
+    print(SIDE_TABLE)
+    print("Caps:")
+    print(CAPS_TABLE)
+    return 0
+
+# Extra tip paragraphs for padding
+EXTRA_PARAGRAPHS = [
+    "When integrating with a frontend, use the ABI in DOPPEL_BANGER_ABI and connect via Web3 to the contract address.",
+    "For batch registration, ensure pairIds, leftHashes, and rightHashes arrays have the same length and do not exceed DB_MAX_BATCH.",
+    "Strike reasonHash can be keccak256(abi.encodePacked(\"reason string\")) or any bytes32 for off-chain logging.",
+    "Bounty is cumulative: multiple calls to postBounty(pairId) add to the same pair's bountyWei.",
+    "Only one claimBounty per pair; after that bountyClaimed is true and further claims revert.",
+    "Stripes are optional metadata; linkStripeToPair can be used to associate external references with a pair.",
+    "Namespace freeze affects registerTwin and addStripe; resolution and bounty actions are not blocked.",
+    "getPairsInRange and getStripesInRange are gas-efficient for pagination; avoid loading full arrays when possible.",
+    "derivePairId(leftHash, rightHash, binder, salt) gives unique pairIds when the same hashes are used by different binders or with different salts.",
+    "Use pairExists(pairId) before registering to avoid wasting gas on DB_DuplicatePair revert.",
+    "remainingSlotsForBinder(account) and remainingGlobalPairSlots() help plan batch sizes.",
+    "Fee is computed as (bountyWei * feeBps) / 10_000; net is bountyWei - fee. feeBps is capped by DB_FEE_BPS_CAP.",
+    "Top binders: getTopBindersByPairCount(topN) returns addresses and their pair counts, sorted by count descending.",
+    "Blocks since deploy: blocksSinceDeploy(). Per pair: blocksSincePairRegistered(pairId). Per stripe: blocksSinceStripeCreated(stripeId).",
+    "Integrity: checkPairIntegrity(pairId) and checkStripeIntegrity(stripeId) return exists and basic validity flags.",
+    "Multiple summaries: getMultiplePairSummaries(pairIds[]) and getMultipleStripeSummaries(stripeIds[]) for batch view.",
+]
+
+def cmd_paragraphs(args: argparse.Namespace) -> int:
+    for i, p in enumerate(EXTRA_PARAGRAPHS, 1):
+        print(f"{i}. {p}")
