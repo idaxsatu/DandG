@@ -1340,3 +1340,64 @@ def cmd_interactive(args: argparse.Namespace) -> int:
         try:
             line = input("DandG> ").strip()
             if not line:
+                continue
+            if line.lower() in ("quit", "exit", "q"):
+                break
+            parts = line.split(maxsplit=3)
+            cmd = (parts[0].lower() if parts else "")
+            if cmd == "hash" and len(parts) >= 3:
+                print("leftHash:", hash_string(parts[1]))
+                print("rightHash:", hash_string(parts[2]))
+            elif cmd == "pair-id" and len(parts) >= 3:
+                lh = parts[1]
+                rh = parts[2]
+                binder = parts[3] if len(parts) > 3 else "0x" + "00" * 20
+                salt = 0
+                print("pairId:", derive_pair_id_local(lh, rh, binder, salt))
+            elif cmd == "stats":
+                if args.contract or DEFAULT_CONTRACT_ADDRESS:
+                    args.rpc_url = args.rpc_url or DEFAULT_RPC_URL
+                    args.contract = args.contract or DEFAULT_CONTRACT_ADDRESS
+                    cmd_stats(args)
+                else:
+                    print("Set --contract and --rpc-url for stats.")
+            elif cmd == "reference":
+                print(REFERENCE_TEXT)
+            else:
+                print("Unknown. Try: hash <left> <right> | pair-id <lh> <rh> | stats | reference | quit")
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            print()
+            break
+    return 0
+
+def cmd_config(args: argparse.Namespace) -> int:
+    print("APP_NAME:", APP_NAME)
+    print("DANDG_VERSION:", DANDG_VERSION)
+    print("CONTRACT_NAME:", CONTRACT_NAME)
+    print("DEFAULT_RPC_URL:", DEFAULT_RPC_URL)
+    print("DANDG_CONTRACT:", DEFAULT_CONTRACT_ADDRESS or "(not set)")
+    return 0
+
+# -----------------------------------------------------------------------------
+# MAIN
+# -----------------------------------------------------------------------------
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=f"{APP_NAME} — CLI for {CONTRACT_NAME} twin-entry attestation ledger")
+    p.add_argument("--rpc-url", type=str, default=DEFAULT_RPC_URL, help="RPC URL")
+    p.add_argument("--contract", type=str, default=DEFAULT_CONTRACT_ADDRESS, help="DoppelBanger contract address")
+    p.add_argument("--private-key", type=str, help="Private key for state-changing txs")
+    p.add_argument("--json", dest="json_out", action="store_true", help="Output JSON where applicable")
+    sub = p.add_subparsers(dest="command", help="Commands")
+
+    hash_p = sub.add_parser("hash", help="Compute left/right keccak256 hashes")
+    hash_p.add_argument("--left", type=str, default="")
+    hash_p.add_argument("--right", type=str, default="")
+    hash_p.set_defaults(func=cmd_hash)
+
+    pid_p = sub.add_parser("pair-id", help="Derive pairId from leftHash, rightHash, binder, salt")
+    pid_p.add_argument("--left-hash", type=str, required=True)
+    pid_p.add_argument("--right-hash", type=str, required=True)
+    pid_p.add_argument("--binder", type=str, default="")
