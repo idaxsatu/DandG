@@ -852,3 +852,64 @@ Stripes (optional):
 """
 
 DAILY_TWIN_PRACTICE = [
+    "Verify pairExists before registering to avoid DB_DuplicatePair.",
+    "Use batchRegisterTwins for multiple pairs in one tx (up to 72).",
+    "Store pairId and leftHash/rightHash off-chain for quick lookup.",
+    "Check getGlobalStats() before large batch operations.",
+    "Use getPairsInRange for pagination instead of loading all pair IDs.",
+    "Resolved pairs: filter by getPairIdsByOutcome(outcome).",
+    "Unresolved: getUnresolvedPairIdsInRange or countUnresolvedPairs().",
+    "Bounty total: totalBountyWeiAcrossAllPairs().",
+    "Stripe–pair links: getLinkedStripeIdsForPair(pairId).",
+    "Integrity: checkPairIntegrity(pairId) and checkStripeIntegrity(stripeId).",
+    "Blocks since deploy: blocksSinceDeploy().",
+    "Fee: computeFeeForBounty(bountyWei) and computeNetBounty(bountyWei).",
+    "Top binders: getTopBindersByPairCount(topN).",
+    "Can register: canRegisterMore(account).",
+    "Remaining slots: remainingSlotsForBinder(account), remainingGlobalPairSlots().",
+    "Outcome label: outcomeLabel(outcome) returns 'none'|'left'|'right'|'tie'.",
+    "Left/right hashes: getLeftAndRightHashes(pairId).",
+    "Bounty claimable: bountyClaimable(pairId).",
+    "Can strike: canStrike(pairId, side, account).",
+    "Can resolve: canResolve(pairId). Can post bounty: canPostBounty(pairId).",
+]
+
+CONTRACT_VIEW_FUNCTIONS_LIST = """
+DoppelBanger view functions (no state change):
+
+  getPair(pairId)
+  getLeftHash(pairId), getRightHash(pairId), getBinder(pairId)
+  isResolved(pairId), getResolutionOutcome(pairId), pairExists(pairId)
+  getBountyWei(pairId), hasStruck(pairId, side, account)
+  getPairIdAt(index), getPairIdsByBinder(binder), getPairCountByBinder(binder)
+  getAllPairIds(), getStrikersLeft(pairId), getStrikersRight(pairId)
+  getStripe(stripeId), getStripeIdAt(index), stripeExists(stripeId)
+  getPairsInRange(fromIndex, toIndex), getStripesInRange(fromIndex, toIndex)
+  getGlobalStats(), contractBalanceWei()
+  getPairIdsRegisteredBetween(fromBlock, toBlock)
+  getResolvedPairIdsInRange(from, to), getUnresolvedPairIdsInRange(from, to)
+  getPairIdsWithBountyInRange(from, to)
+  countResolvedPairs(), countUnresolvedPairs(), countPairsWithBounty()
+  totalBountyWeiAcrossAllPairs()
+  getPairDetails(pairId), getStripeDetails(stripeId)
+  getLinkedStripeIdsForPair(pairId), getStripeIdsByOwner(owner), getStripeCountByOwner(owner)
+  getPairIdsByBinderPaginated(binder, offset, limit)
+  getBinderStats(binder), getImmutables(), getConfig()
+  canRegisterMore(account), remainingSlotsForBinder(account), remainingGlobalPairSlots()
+  getOutcomeConstants(), getCapConstants(), getPairsBatch(pairIds[]), getStripesBatch(stripeIds[])
+  getFirstNPairIds(n), getLastNPairIds(n), getFirstNStripeIds(n), getLastNStripeIds(n)
+  indexOfPairId(pairId), indexOfStripeId(stripeId)
+  getPairIdsByOutcome(outcome), countPairsByOutcome(outcome)
+  getPairIdsWithStrikesInRange(minLeft, minRight)
+  getUnlinkedStripeIds(), getLinkedStripeIds()
+  getPairIdsByBinderAndResolved(binder, resolvedOnly)
+  getBinderAddresses(), getStripeOwnerAddresses()
+  getPairSummary(pairId), getStripeSummary(stripeId)
+  getMultiplePairSummaries(pairIds[]), getMultipleStripeSummaries(stripeIds[])
+  computeFeeForBounty(bountyWei), computeNetBounty(bountyWei)
+  getFeeBpsCap(), getMaxBatchSize(), getMaxStripes(), getMaxPairsGlobal()
+  getMaxPairsPerBinderCap(), getSidesCount()
+  checkPairIntegrity(pairId), checkStripeIntegrity(stripeId)
+  blocksSinceDeploy(), blocksSincePairRegistered(pairId), blocksSinceStripeCreated(stripeId)
+  getTopBindersByPairCount(topN), getDeployBlock(), getTreasuryAddress(), getArbiterAddress()
+  getKeeperAddress(), getFeeCollectorAddress(), getStripeAnchorA(), getStripeAnchorB()
