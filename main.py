@@ -791,3 +791,64 @@ EXTRA_TWIN_TIPS = [
     "contractBalanceWei() includes all received ETH (receive(), postBounty).",
     "withdrawToTreasury(amountWei) is keeper-only; issueRefund(to, amountWei, reasonHash) is arbiter-only.",
 ]
+
+def cmd_usage(args: argparse.Namespace) -> int:
+    print(USAGE_EXAMPLES)
+    return 0
+
+def cmd_outcomes(args: argparse.Namespace) -> int:
+    for k, v in OUTCOME_DESCRIPTIONS.items():
+        print(f"  {k}: {OUTCOME_LABELS.get(k, '?')} — {v}")
+    return 0
+
+def cmd_immutables(args: argparse.Namespace) -> int:
+    print(CONTRACT_IMMUTABLES_HELP)
+    return 0
+
+def cmd_help(args: argparse.Namespace) -> int:
+    print(__doc__)
+    print(USAGE_EXAMPLES)
+    return 0
+
+# -----------------------------------------------------------------------------
+# EXTENDED WORKFLOW AND REFERENCE (bulk content for app size)
+# -----------------------------------------------------------------------------
+
+WORKFLOW_STEP_BY_STEP = """
+DoppelBanger workflow (step by step):
+
+Step 1 — Prepare hashes (off-chain or via contract view):
+  - Choose left and right payloads (e.g. two attestation strings or blob hashes).
+  - leftHash = keccak256(leftPayload), rightHash = keccak256(rightPayload).
+  - Use DandG: hash --left "..." --right "..." to get leftHash and rightHash.
+
+Step 2 — Derive pairId:
+  - pairId = keccak256(leftHash, rightHash) or keccak256(leftHash, rightHash, binder, salt).
+  - Use DandG: pair-id --left-hash 0x... --right-hash 0x... [--binder 0x...] [--salt 0].
+
+Step 3 — Check capacity:
+  - Call pairExists(pairId) — must be false.
+  - Call remainingSlotsForBinder(yourAddress) and remainingGlobalPairSlots().
+
+Step 4 — Register twin:
+  - registerTwin(pairId, leftHash, rightHash). Sender becomes binder.
+  - Use DandG: register --pair-id 0x... --left-hash 0x... --right-hash 0x... --private-key $PK.
+
+Step 5 (optional) — Strikes:
+  - Any account can strike once per side: strikeMirror(pairId, side, reasonHash).
+  - side 0 = left, 1 = right. reasonHash can be keccak256("reason string").
+
+Step 6 (optional) — Bounty:
+  - Anyone can postBounty(pairId) with msg.value before resolution.
+
+Step 7 — Resolution (arbiter only):
+  - resolvePair(pairId, outcome). outcome: 0=none, 1=left, 2=right, 3=tie.
+
+Step 8 — Claim bounty (after resolution):
+  - Arbiter or binder: claimBounty(pairId). One claim per pair.
+
+Stripes (optional):
+  - addStripe(stripeId, anchorHash) then linkStripeToPair(stripeId, pairId) to attach a stripe to a pair.
+"""
+
+DAILY_TWIN_PRACTICE = [
