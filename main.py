@@ -59,3 +59,64 @@ DOPPEL_BANGER_ABI = [
     {"inputs": [{"internalType": "bytes32", "name": "stripeId", "type": "bytes32"}, {"internalType": "bytes32", "name": "pairId", "type": "bytes32"}], "name": "linkStripeToPair", "outputs": [], "stateMutability": "nonpayable", "type": "function"},
     {"inputs": [{"internalType": "bytes32", "name": "pairId", "type": "bytes32"}], "name": "getPair", "outputs": [{"internalType": "bytes32", "name": "leftHash", "type": "bytes32"}, {"internalType": "bytes32", "name": "rightHash", "type": "bytes32"}, {"internalType": "address", "name": "binder", "type": "address"}, {"internalType": "uint256", "name": "registeredAtBlock", "type": "uint256"}, {"internalType": "uint8", "name": "resolutionOutcome", "type": "uint8"}, {"internalType": "bool", "name": "resolved", "type": "bool"}, {"internalType": "uint256", "name": "strikeCountLeft", "type": "uint256"}, {"internalType": "uint256", "name": "strikeCountRight", "type": "uint256"}, {"internalType": "uint256", "name": "bountyWei", "type": "uint256"}, {"internalType": "bool", "name": "bountyClaimed", "type": "bool"}], "stateMutability": "view", "type": "function"},
     {"inputs": [{"internalType": "bytes32", "name": "stripeId", "type": "bytes32"}], "name": "getStripe", "outputs": [{"internalType": "bytes32", "name": "anchorHash", "type": "bytes32"}, {"internalType": "address", "name": "owner", "type": "address"}, {"internalType": "uint256", "name": "createdAtBlock", "type": "uint256"}, {"internalType": "bytes32", "name": "linkedPairId", "type": "bytes32"}, {"internalType": "bool", "name": "linked", "type": "bool"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [], "name": "getGlobalStats", "outputs": [{"internalType": "uint256", "name": "totalPairs", "type": "uint256"}, {"internalType": "uint256", "name": "totalStripes", "type": "uint256"}, {"internalType": "uint256", "name": "deployBlockNum", "type": "uint256"}, {"internalType": "uint256", "name": "currentFeeBps", "type": "uint256"}, {"internalType": "uint256", "name": "currentMaxPairsPerBinder", "type": "uint256"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "fromIndex", "type": "uint256"}, {"internalType": "uint256", "name": "toIndex", "type": "uint256"}], "name": "getPairsInRange", "outputs": [{"internalType": "bytes32[]", "name": "pairIds", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "leftHashes", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "rightHashes", "type": "bytes32[]"}, {"internalType": "address[]", "name": "binders", "type": "address[]"}, {"internalType": "bool[]", "name": "resolvedFlags", "type": "bool[]"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "fromIndex", "type": "uint256"}, {"internalType": "uint256", "name": "toIndex", "type": "uint256"}], "name": "getStripesInRange", "outputs": [{"internalType": "bytes32[]", "name": "stripeIds", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "anchorHashes", "type": "bytes32[]"}, {"internalType": "address[]", "name": "owners", "type": "address[]"}, {"internalType": "bool[]", "name": "linkedFlags", "type": "bool[]"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "bytes", "name": "leftPayload", "type": "bytes"}, {"internalType": "bytes", "name": "rightPayload", "type": "bytes"}], "name": "hashTwinPayload", "outputs": [{"internalType": "bytes32", "name": "leftHash", "type": "bytes32"}, {"internalType": "bytes32", "name": "rightHash", "type": "bytes32"}], "stateMutability": "pure", "type": "function"},
+    {"inputs": [{"internalType": "bytes32", "name": "leftHash", "type": "bytes32"}, {"internalType": "bytes32", "name": "rightHash", "type": "bytes32"}, {"internalType": "address", "name": "binder", "type": "address"}, {"internalType": "uint256", "name": "salt", "type": "uint256"}], "name": "derivePairId", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "pure", "type": "function"},
+    {"inputs": [], "name": "pairCount", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [], "name": "stripeCount", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "index", "type": "uint256"}], "name": "getPairIdAt", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "index", "type": "uint256"}], "name": "getStripeIdAt", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "bytes32", "name": "pairId", "type": "bytes32"}], "name": "pairExists", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "bytes32", "name": "stripeId", "type": "bytes32"}], "name": "stripeExists", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [], "name": "contractBalanceWei", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
+]
+
+# -----------------------------------------------------------------------------
+# KECCAK (if no web3, fallback to pycryptodome or pure)
+# -----------------------------------------------------------------------------
+
+def _keccak256(data: bytes) -> bytes:
+    try:
+        from Crypto.Hash import keccak
+        h = keccak.new(digest_bits=256)
+        h.update(data)
+        return h.digest()
+    except ImportError:
+        try:
+            from eth_hash.auto import keccak as eth_keccak
+            return eth_keccak(data)
+        except ImportError:
+            return hashlib.sha3_256(data).digest()
+
+def bytes32_from_hex(s: str) -> bytes:
+    s = s.strip()
+    if s.startswith("0x"):
+        s = s[2:]
+    if len(s) != 64:
+        raise ValueError("Expected 64 hex chars (32 bytes)")
+    return bytes.fromhex(s)
+
+def hex_from_bytes32(b: bytes) -> str:
+    return "0x" + b.hex()
+
+def hash_payload(payload: bytes) -> str:
+    return "0x" + _keccak256(payload).hex()
+
+def hash_string(s: str) -> str:
+    return hash_payload(s.encode("utf-8"))
+
+def derive_pair_id_local(left_hash_hex: str, right_hash_hex: str, binder: str, salt: int) -> str:
+    left_b = bytes32_from_hex(left_hash_hex)
+    right_b = bytes32_from_hex(right_hash_hex)
+    binder_b = bytes.fromhex(binder.replace("0x", "").lower().zfill(40))
+    data = left_b + right_b + binder_b + salt.to_bytes(32, "big")
+    return "0x" + _keccak256(data).hex()
+
+# -----------------------------------------------------------------------------
+# WEB3 HELPERS
+# -----------------------------------------------------------------------------
+
+def get_w3(rpc_url: str):
+    try:
