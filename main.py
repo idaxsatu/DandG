@@ -486,3 +486,64 @@ def cmd_list_stripes(args: argparse.Namespace) -> int:
     from_idx = int(getattr(args, "from_idx", 0))
     to_idx = int(getattr(args, "to_idx", 99))
     try:
+        total = contract.functions.stripeCount().call()
+        if total == 0:
+            print("No stripes.")
+            return 0
+        if to_idx >= total:
+            to_idx = total - 1
+        if from_idx > to_idx:
+            from_idx, to_idx = 0, min(99, total - 1)
+        stripeIds, anchorHashes, owners, linkedFlags = contract.functions.getStripesInRange(from_idx, to_idx).call()
+        for i in range(len(stripeIds)):
+            print(hex_from_bytes32(stripeIds[i]), "|", hex_from_bytes32(anchorHashes[i])[:18]+"...", "|", owners[i], "|", "linked" if linkedFlags[i] else "unlinked")
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+def cmd_stats(args: argparse.Namespace) -> int:
+    rpc = args.rpc_url or DEFAULT_RPC_URL
+    contract_addr = args.contract or DEFAULT_CONTRACT_ADDRESS
+    if not contract_addr:
+        print("Error: --contract or DANDG_CONTRACT required", file=sys.stderr)
+        return 1
+    w3 = get_w3(rpc)
+    contract = get_contract(w3, contract_addr)
+    try:
+        totalPairs, totalStripes, deployBlockNum, currentFeeBps, currentMaxPairsPerBinder = contract.functions.getGlobalStats().call()
+        balance = contract.functions.contractBalanceWei().call()
+        print("Total pairs:", totalPairs)
+        print("Total stripes:", totalStripes)
+        print("Deploy block:", deployBlockNum)
+        print("Fee BPS:", currentFeeBps)
+        print("Max pairs per binder:", currentMaxPairsPerBinder)
+        print("Contract balance (wei):", balance)
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return 1
+    return 0
+
+# -----------------------------------------------------------------------------
+# REFERENCE / CONSTANTS / VERSION / DEMO / INTERACTIVE
+# -----------------------------------------------------------------------------
+
+REFERENCE_TEXT = """
+DoppelBanger contract — twin-entry attestation ledger.
+
+View (read-only):
+  getPair(pairId) -> leftHash, rightHash, binder, registeredAtBlock, resolutionOutcome, resolved, strikeCountLeft, strikeCountRight, bountyWei, bountyClaimed
+  getStripe(stripeId) -> anchorHash, owner, createdAtBlock, linkedPairId, linked
+  getGlobalStats() -> totalPairs, totalStripes, deployBlockNum, currentFeeBps, currentMaxPairsPerBinder
+  getPairsInRange(fromIndex, toIndex) -> pairIds[], leftHashes[], rightHashes[], binders[], resolvedFlags[]
+  getStripesInRange(fromIndex, toIndex) -> stripeIds[], anchorHashes[], owners[], linkedFlags[]
+  pairExists(pairId), stripeExists(stripeId), pairCount(), stripeCount(), contractBalanceWei()
+  getPairIdAt(index), getStripeIdAt(index)
+
+State-changing (require signer):
+  registerTwin(pairId, leftHash, rightHash)
+  strikeMirror(pairId, side, reasonHash)   // side 0=left, 1=right
+  resolvePair(pairId, outcome)             // outcome 0=none, 1=left, 2=right, 3=tie
+  postBounty(pairId) payable
+  claimBounty(pairId)
+  addStripe(stripeId, anchorHash)
