@@ -1462,3 +1462,53 @@ def main() -> int:
     sub.add_parser("stats", help="Global stats").set_defaults(func=cmd_stats)
     sub.add_parser("config", help="Show config").set_defaults(func=cmd_config)
     sub.add_parser("constants", help="Show contract constants").set_defaults(func=cmd_constants)
+    sub.add_parser("reference", help="Contract reference").set_defaults(func=cmd_reference)
+    sub.add_parser("version", help="App version").set_defaults(func=cmd_version)
+    sub.add_parser("demo", help="Local hash demo").set_defaults(func=cmd_demo)
+    sub.add_parser("interactive", help="Interactive REPL").set_defaults(func=cmd_interactive)
+    sub.add_parser("playbook", help="Twin attestation playbook").set_defaults(func=cmd_playbook)
+    sub.add_parser("tips", help="Contract usage tips").set_defaults(func=cmd_tips)
+    sub.add_parser("errors", help="Error code reference").set_defaults(func=cmd_errors)
+    sub.add_parser("examples", help="Example payload hashes").set_defaults(func=cmd_examples)
+    sub.add_parser("usage", help="Usage examples").set_defaults(func=cmd_usage)
+    sub.add_parser("outcomes", help="Outcome codes 0-3 descriptions").set_defaults(func=cmd_outcomes)
+    sub.add_parser("immutables", help="Constructor immutables help").set_defaults(func=cmd_immutables)
+    sub.add_parser("help", help="Full help and usage").set_defaults(func=cmd_help)
+
+    batch_h = sub.add_parser("batch-hashes", help="Hash multiple strings (comma-separated)")
+    batch_h.add_argument("--items", type=str, required=True)
+    batch_h.set_defaults(func=cmd_batch_hashes)
+
+    gen_a = sub.add_parser("gen-addresses", help="Generate N EIP-55 addresses")
+    gen_a.add_argument("--count", type=int, default=8)
+    gen_a.set_defaults(func=cmd_gen_addresses)
+
+    sub.add_parser("workflow", help="Step-by-step workflow").set_defaults(func=cmd_workflow)
+    sub.add_parser("daily", help="Daily twin practice tips").set_defaults(func=cmd_daily)
+    sub.add_parser("views", help="List all view functions").set_defaults(func=cmd_views)
+    sub.add_parser("writes", help="List state-changing functions").set_defaults(func=cmd_writes)
+    sub.add_parser("pure", help="List pure/helper functions").set_defaults(func=cmd_pure)
+    sub.add_parser("sample-reasons", help="Sample reason hashes").set_defaults(func=cmd_sample_reasons)
+    sub.add_parser("sample-anchors", help="Sample anchor hashes").set_defaults(func=cmd_sample_anchors)
+    sub.add_parser("commands", help="List all commands with one-liners").set_defaults(func=cmd_commands)
+    sub.add_parser("env", help="Environment and deployment notes").set_defaults(func=cmd_env)
+    sub.add_parser("tables", help="Outcome/side/cap tables").set_defaults(func=cmd_tables)
+    sub.add_parser("paragraphs", help="Extra integration paragraphs").set_defaults(func=cmd_paragraphs)
+    sub.add_parser("quickstart", help="Quick start guide").set_defaults(func=cmd_quickstart)
+    sub.add_parser("troubleshoot", help="Troubleshooting").set_defaults(func=cmd_troubleshoot)
+    sub.add_parser("padding", help="Reference lines").set_defaults(func=cmd_padding)
+    sub.add_parser("long-ref", help="Long reference summary").set_defaults(func=cmd_long_ref)
+    sub.add_parser("additional-tips", help="Additional CLI tips").set_defaults(func=cmd_additional_tips)
+    sub.add_parser("final-notes", help="Final deployment notes").set_defaults(func=cmd_final_notes)
+
+    args = p.parse_args()
+    if not args.command:
+        p.print_help()
+        return 0
+    if args.command == "post-bounty":
+        args.value_wei = args.value_wei if hasattr(args, "value_wei") else "0"
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
