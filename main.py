@@ -974,3 +974,64 @@ def cmd_writes(args: argparse.Namespace) -> int:
 
 def cmd_pure(args: argparse.Namespace) -> int:
     print(PURE_HELPER_LIST)
+    return 0
+
+# -----------------------------------------------------------------------------
+# SAMPLE DATA AND EXTRA REFERENCE (for app size 1512+)
+# -----------------------------------------------------------------------------
+
+SAMPLE_REASON_STRINGS = [
+    "invalid_claim",
+    "data_mismatch",
+    "expired_attestation",
+    "duplicate_submission",
+    "out_of_scope",
+    "failed_verification",
+    "integrity_check_failed",
+    "wrong_side",
+    "contradiction_detected",
+    "audit_flag",
+]
+
+SAMPLE_ANCHOR_LABELS = [
+    "anchor_v1",
+    "stripe_ref_0",
+    "external_ref_abc",
+    "audit_trail_1",
+    "checkpoint_0",
+]
+
+def _sample_reason_hashes():
+    out = []
+    for s in SAMPLE_REASON_STRINGS:
+        out.append((s, hash_string(s)))
+    return out
+
+def cmd_sample_reasons(args: argparse.Namespace) -> int:
+    for label, h in _sample_reason_hashes():
+        print(label, "->", h)
+    return 0
+
+def cmd_sample_anchors(args: argparse.Namespace) -> int:
+    for label in SAMPLE_ANCHOR_LABELS:
+        print(label, "->", hash_string(label))
+    return 0
+
+# Extended ABI entries (optional; some frontends need more)
+DOPPEL_BANGER_ABI_EXTRA = [
+    {"inputs": [{"internalType": "bytes32[]", "name": "pairIds", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "leftHashes", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "rightHashes", "type": "bytes32[]"}], "name": "batchRegisterTwins", "outputs": [{"internalType": "uint256", "name": "registered", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "fromIndex", "type": "uint256"}, {"internalType": "uint256", "name": "toIndex", "type": "uint256"}], "name": "getPairsInRange", "outputs": [{"internalType": "bytes32[]", "name": "pairIds", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "leftHashes", "type": "bytes32[]"}, {"internalType": "bytes32[]", "name": "rightHashes", "type": "bytes32[]"}, {"internalType": "address[]", "name": "binders", "type": "address[]"}, {"internalType": "bool[]", "name": "resolvedFlags", "type": "bool[]"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [], "name": "getGlobalStats", "outputs": [{"internalType": "uint256", "name": "totalPairs", "type": "uint256"}, {"internalType": "uint256", "name": "totalStripes", "type": "uint256"}, {"internalType": "uint256", "name": "deployBlockNum", "type": "uint256"}, {"internalType": "uint256", "name": "currentFeeBps", "type": "uint256"}, {"internalType": "uint256", "name": "currentMaxPairsPerBinder", "type": "uint256"}], "stateMutability": "view", "type": "function"},
+]
+
+# One-liner help for each command (for interactive help)
+COMMAND_ONE_LINERS = {
+    "hash": "Compute keccak256 for left and right payloads.",
+    "pair-id": "Derive pairId from leftHash, rightHash, binder, salt.",
+    "register": "Register a twin pair (needs --private-key).",
+    "strike": "Strike mirror for a pair (side 0 or 1).",
+    "resolve": "Resolve pair (arbiter only, outcome 0-3).",
+    "post-bounty": "Post bounty (payable).",
+    "claim-bounty": "Claim bounty after resolution.",
+    "add-stripe": "Add a stripe.",
+    "link-stripe": "Link stripe to pair.",
